@@ -22,12 +22,15 @@ public class QueryHelper {
     
     public final Provider provider;
     
+    public static final QueryFragment
+            ColumnValues = new QueryFragment("`{0}`=VALUES(`{0}`)"),
+            ColumnLastInsertId = new QueryFragment("`{0}`=LAST_INSERT_ID(`{0}`)");
     
-    private static Method ROWS, AFFECTED, INSERT_ID;
+    protected static Method FETCH, AFFECTED, INSERT_ID;
     static {
         Class self = QueryHelper.class;
         try {
-            ROWS = self.getMethod("getRows", PreparedStatement.class);
+            FETCH = self.getMethod("getRows", PreparedStatement.class);
             AFFECTED = self.getMethod("getUpdateCount", PreparedStatement.class);
             INSERT_ID = self.getMethod("getInsertId", PreparedStatement.class);
         }
@@ -51,7 +54,7 @@ public class QueryHelper {
         return stmt;
     }
     
-    public Object execute(Method callback, String sql, Object... params) throws SQLException {
+    public Object execute(Method method, String sql, Object... params) throws SQLException {
         Connection conn = provider.getConnection();
         if(conn == null) return null;
         
@@ -60,7 +63,7 @@ public class QueryHelper {
             stmt.execute();
             
             try {
-                return callback.invoke(this, stmt);
+                return method.invoke(this, stmt);
             }
             // TODO: Improve exception handling
             catch(Exception e) {
@@ -76,10 +79,10 @@ public class QueryHelper {
     
     
     public ArrayList<HashMap> fetch(String sql, Object... params) throws SQLException {
-        return (ArrayList<HashMap>) execute(ROWS, sql, params);
+        return (ArrayList<HashMap>) execute(FETCH, sql, params);
     }
     
-    public Integer affect(String sql, Object... params) throws SQLException {
+    public Integer affected(String sql, Object... params) throws SQLException {
         return (Integer) execute(AFFECTED, sql, params);
     }
     
