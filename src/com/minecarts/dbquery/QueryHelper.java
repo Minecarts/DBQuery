@@ -37,8 +37,8 @@ public class QueryHelper {
     }
     
     
-    public QueryHelper(Provider p) {
-        provider = p;
+    public QueryHelper(Provider provider) {
+        this.provider = provider;
     }
     
     
