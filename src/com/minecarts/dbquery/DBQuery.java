@@ -1,64 +1,66 @@
 package com.minecarts.dbquery;
 
 import java.util.logging.Logger;
-import java.util.List;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-
-import org.bukkit.plugin.PluginDescriptionFile;
-import org.bukkit.plugin.PluginManager;
-import org.bukkit.util.config.Configuration;
-
-import com.minecarts.dbconnector.providers.*;
-import com.minecarts.dbconnector.DBConnector;
 import java.util.logging.Level;
 
+import java.text.MessageFormat;
 
-public class DBQuery extends org.bukkit.plugin.java.JavaPlugin{
-    public final Logger log = Logger.getLogger("com.minecarts.dbquery"); 
+import org.bukkit.plugin.PluginDescriptionFile;
+import org.bukkit.util.config.Configuration;
+
+import com.minecarts.dbconnector.DBConnector;
+
+
+
+public class DBQuery extends org.bukkit.plugin.java.JavaPlugin {
+    private final Logger logger = Logger.getLogger("com.minecarts.dbquery"); 
     
-    private DBConnector dbc;
     private PluginDescriptionFile pdf;
     private Configuration config;
+    private DBConnector dbc;
 
     public void onEnable() {
-        PluginManager pm = getServer().getPluginManager();
-        PluginDescriptionFile pdf = getDescription();
+        pdf = getDescription();
+        config = getConfiguration();
+        dbc = (DBConnector) getServer().getPluginManager().getPlugin("DBConnector");
         
-        this.config = getConfiguration();
+        logf("Enabled {0}", pdf.getVersion());
         
-        //Get our MySQLPool
-        this.dbc = (DBConnector) pm.getPlugin("DBConnector");
-        //Get the connection based upon.. a config?, or something.
-        //this.config.getString("connection");
-        Connection db = dbc.getConnection("minecarts");
         
-        getServer().getScheduler().scheduleAsyncDelayedTask(this, new Runnable(){
-            public void run(){
-                //Do something
-            }
-        });
-        this.log("Enabled successfully.");
+        try {
+            QueryHelper db = new QueryHelper(dbc.getProvider("minecarts"));
+            log(db.fetch("SELECT COUNT(*) FROM subscriptions").toString());
+            log(db.insertId("INSERT INTO tests (name) VALUES (?)", "kevin").toString());
+        }
+        catch(Exception e) {
+            e.printStackTrace();
+        }
     }
     
-    public void onDisable(){
+    public void onDisable() {
         
     }
     
-
-    public void log(String message, java.util.logging.Level level){
-        this.log.log(level, this.pdf.getName() + "> " + message);
-    }
-    public void log(String message){
-        this.log(message,Level.INFO);
+    
+    
+    public QueryHelper getConnection(String provider) {
+        return new QueryHelper(dbc.getProvider(provider));
     }
     
+    
+    
+    public void log(String message) {
+        log(Level.INFO, message);
+    }
+    public void log(Level level, String message) {
+        logger.log(level, MessageFormat.format("{0}> {1}", pdf.getName(), message));
+    }
+    
+    public void logf(String message, Object... args) {
+        logf(Level.INFO, message, args);
+    }
+    public void logf(Level level, String message, Object... args) {
+        log(level, MessageFormat.format(message, args));
+    }
     
 }

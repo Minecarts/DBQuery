@@ -3,4 +3,5 @@ main: com.minecarts.dbquery.DBQuery
 version: ${pom.version}
 website: http://minecarts.com/
 author: verrier, megabytes
-description: Query interface to DBConnector
+description: Query interface for DBConnector
+depend: [DBConnector]
