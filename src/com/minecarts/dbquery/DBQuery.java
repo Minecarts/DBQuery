@@ -31,43 +31,17 @@ public class DBQuery extends org.bukkit.plugin.java.JavaPlugin {
         dbc = (DBConnector) getServer().getPluginManager().getPlugin("DBConnector");
         
         logf("Enabled {0}", pdf.getVersion());
-        
-        // EXAMPLE QUERIES
-        try {
-            AsyncQueryHelper db = getAsyncConnection("minecarts");
-            //db.callback(this, "handleSubscriptions").fetch("SELECT COUNT(*) FROM subscriptions");
-            db.callback(this, "update").affected("UPDATE tests SET name = ?", "kevin");
-        }
-        catch(Exception e) {
-            e.printStackTrace();
-        }
     }
     
     public void onDisable() {
     }
     
     
-    // EXAMPLE CALLBACKS
-    public void handleSubscriptions(ArrayList rows) {
-        logf("RESULT: {0}", rows.toString());
-    }
-    public void handleSubscriptions(Exception e) {
-        e.printStackTrace();
-    }
-    public void update(int affected) {
-        logf("UPDATED (int): {0}", affected);
-    }
-    public void update(Integer affected) {
-        logf("UPDATED (Integer): {0}", affected);
-    }
-    public void update(Exception e) {
-        e.printStackTrace();
-    }
-    
-    
+    // sync
     public QueryHelper getConnection(String provider) {
         return new QueryHelper(dbc.getProvider(provider));
     }
+    // async
     public AsyncQueryHelper getAsyncConnection(String provider) {
         return new AsyncQueryHelper(dbc.getProvider(provider));
     }
