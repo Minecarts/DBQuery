@@ -2,7 +2,6 @@ package com.minecarts.dbquery;
 
 import java.util.logging.Logger;
 import java.util.logging.Level;
-import java.util.ArrayList;
 
 import java.lang.reflect.Method;
 
@@ -19,7 +18,7 @@ import com.minecarts.dbconnector.providers.Provider;
 
 
 public class DBQuery extends org.bukkit.plugin.java.JavaPlugin {
-    private final Logger logger = Logger.getLogger("com.minecarts.dbquery"); 
+    private static final Logger logger = Logger.getLogger("com.minecarts.dbquery"); 
     
     private PluginDescriptionFile pdf;
     private Configuration config;
@@ -73,8 +72,8 @@ public class DBQuery extends org.bukkit.plugin.java.JavaPlugin {
             super(provider);
         }
         
-        public AsyncQueryHelper callback(Object scope, String method) {
-            callback = new RunnableCallback(scope, method);
+        public AsyncQueryHelper callback(Object scope, String method, Object... args) {
+            callback = new RunnableCallback(scope, method, args);
             return this;
         }
         public AsyncQueryHelper callback(RunnableCallback callback) {
@@ -94,10 +93,12 @@ public class DBQuery extends org.bukkit.plugin.java.JavaPlugin {
             public Object scope;
             public String method;
             public Object result;
+            public Object[] args;
 
-            public RunnableCallback(Object scope, String method) {
+            public RunnableCallback(Object scope, String method, Object... args) {
                 this.scope = scope;
                 this.method = method;
+                this.args = args;
             }
 
             public RunnableCallback setResult(Object result) {
@@ -106,8 +107,14 @@ public class DBQuery extends org.bukkit.plugin.java.JavaPlugin {
             }
             
             public void run() {
+                Object[] args = QueryFragment.concat(new Object[]{result}, this.args);
+                Class[] classes = new Class[args.length];
+                for(int i = 0; i < args.length; i++) {
+                    classes[i] = args[i].getClass();
+                }
+                
                 try {
-                    (scope.getClass().getMethod(method, result == null ? null : result.getClass())).invoke(scope, result);
+                    (scope.getClass().getMethod(method, classes)).invoke(scope, args);
                 }
                 catch(Exception e) {
                     e.printStackTrace();
