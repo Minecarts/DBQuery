@@ -35,8 +35,8 @@ public class DBQuery extends org.bukkit.plugin.java.JavaPlugin {
         // EXAMPLE QUERIES
         try {
             AsyncQueryHelper db = getAsyncConnection("minecarts");
-            db.callback(this, "handleSubscriptions").fetch("SELECT COUNT(*) FROM subscriptions");
-            db.callback(this, "testInsert").insertId("INSERT INTO tests (name) VALUES (?), (?) ", "kevin", "stephen");
+            //db.callback(this, "handleSubscriptions").fetch("SELECT COUNT(*) FROM subscriptions");
+            db.callback(this, "update").affected("UPDATE tests SET name = ?", "kevin");
         }
         catch(Exception e) {
             e.printStackTrace();
@@ -54,10 +54,13 @@ public class DBQuery extends org.bukkit.plugin.java.JavaPlugin {
     public void handleSubscriptions(Exception e) {
         e.printStackTrace();
     }
-    public void testInsert(Integer id) {
-        logf("INSERT ID: {0}", id.toString());
+    public void update(int affected) {
+        logf("UPDATED (int): {0}", affected);
     }
-    public void testInsert(Exception e) {
+    public void update(Integer affected) {
+        logf("UPDATED (Integer): {0}", affected);
+    }
+    public void update(Exception e) {
         e.printStackTrace();
     }
     

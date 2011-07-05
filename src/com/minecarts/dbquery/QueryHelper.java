@@ -98,13 +98,13 @@ public class QueryHelper {
     
     
     
-    public static Integer getUpdateCount(PreparedStatement stmt) throws SQLException {
-        return (Integer) stmt.getUpdateCount();
+    public static int getUpdateCount(PreparedStatement stmt) throws SQLException {
+        return stmt.getUpdateCount();
     }
     
-    public static Integer getInsertId(PreparedStatement stmt) throws SQLException {
+    public static int getInsertId(PreparedStatement stmt) throws SQLException {
         ResultSet results = stmt.getGeneratedKeys();
-        return results.last() ? (Integer) results.getInt(1) : null;
+        return results.last() ? results.getInt(1) : null;
     }
     
     public static ArrayList<HashMap> getRows(ResultSet results) throws SQLException {
