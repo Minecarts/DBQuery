@@ -26,13 +26,14 @@ public class QueryHelper {
             ColumnValues = new QueryFragment("`{0}`=VALUES(`{0}`)"),
             ColumnLastInsertId = new QueryFragment("`{0}`=LAST_INSERT_ID(`{0}`)");
     
-    protected static Method FETCH, AFFECTED, INSERT_ID;
+    protected static Method AFFECTED, INSERT_ID, FETCH, GENERATED_KEYS;
     static {
         Class self = QueryHelper.class;
         try {
-            FETCH = self.getMethod("getRows", PreparedStatement.class);
             AFFECTED = self.getMethod("getUpdateCount", PreparedStatement.class);
             INSERT_ID = self.getMethod("getInsertId", PreparedStatement.class);
+            FETCH = self.getMethod("getResultSet", PreparedStatement.class);
+            GENERATED_KEYS = self.getMethod("getGeneratedKeys", PreparedStatement.class);
         }
         catch(NoSuchMethodException e) {
             e.printStackTrace();
@@ -78,10 +79,6 @@ public class QueryHelper {
     }
     
     
-    public ArrayList<HashMap> fetch(String sql, Object... params) throws SQLException {
-        return (ArrayList<HashMap>) execute(FETCH, sql, params);
-    }
-    
     public Integer affected(String sql, Object... params) throws SQLException {
         return (Integer) execute(AFFECTED, sql, params);
     }
@@ -90,17 +87,29 @@ public class QueryHelper {
         return (Integer) execute(INSERT_ID, sql, params);
     }
     
+    public ArrayList<HashMap> fetch(String sql, Object... params) throws SQLException {
+        return (ArrayList<HashMap>) execute(FETCH, sql, params);
+    }
+    
+    public ArrayList<HashMap> generatedKeys(String sql, Object... params) throws SQLException {
+        return (ArrayList<HashMap>) execute(GENERATED_KEYS, sql, params);
+    }
+    
     
     
     
     public static Integer getUpdateCount(PreparedStatement stmt) throws SQLException {
         return (Integer) stmt.getUpdateCount();
     }
-
-    public static ArrayList<HashMap> getRows(PreparedStatement stmt) throws SQLException {
+    
+    public static Integer getInsertId(PreparedStatement stmt) throws SQLException {
+        ResultSet results = stmt.getGeneratedKeys();
+        return results.last() ? (Integer) results.getInt(1) : null;
+    }
+    
+    public static ArrayList<HashMap> getRows(ResultSet results) throws SQLException {
         ArrayList<HashMap> rows = new ArrayList();
-        ResultSet results = stmt.getResultSet();
-        ResultSetMetaData meta = stmt.getMetaData();
+        ResultSetMetaData meta = results.getMetaData();
         int columnCount = meta.getColumnCount();
 
         while(results.next()) {
@@ -113,10 +122,13 @@ public class QueryHelper {
 
         return rows;
     }
-
-    public static Integer getInsertId(PreparedStatement stmt) throws SQLException {
-        ResultSet results = stmt.getGeneratedKeys();
-        return results.next() ? (Integer) results.getInt(1) : null;
+    
+    public static ArrayList<HashMap> getResultSet(PreparedStatement stmt) throws SQLException {
+        return getRows(stmt.getResultSet());
+    }
+    
+    public static ArrayList<HashMap> getGeneratedKeys(PreparedStatement stmt) throws SQLException {
+        return getRows(stmt.getGeneratedKeys());
     }
     
 }
