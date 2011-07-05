@@ -32,13 +32,11 @@ public class DBQuery extends org.bukkit.plugin.java.JavaPlugin {
         
         logf("Enabled {0}", pdf.getVersion());
         
-        
+        // EXAMPLE QUERIES
         try {
-            AsyncQueryHelper db = new AsyncQueryHelper(dbc.getProvider("minecarts"));
-            //log(db.fetch("SELECT COUNT(*) FROM subscriptions") == null ? "null" : "not null?");
-            //log(db.insertId("INSERT INTO tests (name) VALUES (?)", "kevin") == null ? "null" : "not null?");
-            log(Thread.currentThread().getName());
+            AsyncQueryHelper db = getAsyncConnection("minecarts");
             db.callback(this, "handleSubscriptions").fetch("SELECT COUNT(*) FROM subscriptions");
+            db.callback(this, "testInsert").insertId("INSERT INTO tests (name) VALUES (?), (?) ", "kevin", "stephen");
         }
         catch(Exception e) {
             e.printStackTrace();
@@ -49,11 +47,17 @@ public class DBQuery extends org.bukkit.plugin.java.JavaPlugin {
     }
     
     
-    public void handleSubscriptions(ArrayList result) throws Exception {
-        logf("RESULT: {0}", result.toString());
-        log(Thread.currentThread().getName());
+    // EXAMPLE CALLBACKS
+    public void handleSubscriptions(ArrayList rows) {
+        logf("RESULT: {0}", rows.toString());
     }
     public void handleSubscriptions(Exception e) {
+        e.printStackTrace();
+    }
+    public void testInsert(Integer id) {
+        logf("INSERT ID: {0}", id.toString());
+    }
+    public void testInsert(Exception e) {
         e.printStackTrace();
     }
     
@@ -61,7 +65,7 @@ public class DBQuery extends org.bukkit.plugin.java.JavaPlugin {
     public QueryHelper getConnection(String provider) {
         return new QueryHelper(dbc.getProvider(provider));
     }
-    public QueryHelper getAsyncConnection(String provider) {
+    public AsyncQueryHelper getAsyncConnection(String provider) {
         return new AsyncQueryHelper(dbc.getProvider(provider));
     }
     
