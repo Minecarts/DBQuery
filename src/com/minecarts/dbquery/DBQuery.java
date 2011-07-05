@@ -72,9 +72,9 @@ public class DBQuery extends org.bukkit.plugin.java.JavaPlugin {
             super(provider);
         }
         
+        
         public AsyncQueryHelper callback(Object scope, String method, Object... args) {
-            callback = new RunnableCallback(scope, method, args);
-            return this;
+            return callback(new RunnableCallback(scope, method, args));
         }
         public AsyncQueryHelper callback(RunnableCallback callback) {
             this.callback = callback;
