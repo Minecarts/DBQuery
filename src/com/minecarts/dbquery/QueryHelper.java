@@ -2,6 +2,7 @@ package com.minecarts.dbquery;
 
 import java.util.HashMap;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import java.lang.reflect.Method;
 
@@ -14,10 +15,7 @@ import java.sql.ResultSetMetaData;
 
 import com.minecarts.dbconnector.providers.Provider;
 
-/**
- *
- * @author Kevin
- */
+
 public class QueryHelper {
     
     public final Provider provider;
@@ -46,7 +44,6 @@ public class QueryHelper {
     }
     
     
-    // TODO: use Type... params and PreparedStatement's primitive methods
     public static PreparedStatement prepare(Connection conn, String sql, Object... params) throws SQLException {
         PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
         for(int i = 0; i < params.length; i++) {
@@ -54,6 +51,7 @@ public class QueryHelper {
         }
         return stmt;
     }
+    
     
     public Object execute(Method method, String sql, Object... params) throws SQLException {
         Connection conn = provider.getConnection();
