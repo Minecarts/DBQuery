@@ -72,7 +72,9 @@ public class DBQuery extends org.bukkit.plugin.java.JavaPlugin {
             super(provider);
         }
         
-        public Object execute(final Method method, final String sql, Object... params) {
+        public Integer affected(final String sql, Object... params) {
+            DBQuery.this.logf("affected called");
+                    
             final Callback callback;
             final Object[] newParams;
             
@@ -85,24 +87,29 @@ public class DBQuery extends org.bukkit.plugin.java.JavaPlugin {
                 newParams = params;
             }
             
+            DBQuery.this.logf("callback: {0}", callback);
+            DBQuery.this.logf("params: {0}", params);
+            
             getServer().getScheduler().scheduleAsyncDelayedTask(DBQuery.this, new Runnable() {
                 public void run() {
-                    Object result;
                     try {
-                        result = AsyncQueryHelper.super.execute(method, sql, newParams);
+                        final Integer result = AsyncQueryHelper.super.affected(sql, newParams);
+                        if(callback != null) {
+                            getServer().getScheduler().scheduleSyncDelayedTask(DBQuery.this, new Runnable() {
+                                public void run() {
+                                    callback.onComplete(result);
+                                }
+                            });
+                        }
                     }
-                    catch(Exception e) {
-                        result = e;
-                    }
-                    
-                    final Object finalResult = result;
-                    
-                    if(callback != null) {
-                        getServer().getScheduler().scheduleSyncDelayedTask(DBQuery.this, new Runnable() {
-                            public void run() {
-                                callback.onComplete(finalResult);
-                            }
-                        });
+                    catch(final Exception e) {
+                        if(callback != null) {
+                            getServer().getScheduler().scheduleSyncDelayedTask(DBQuery.this, new Runnable() {
+                                public void run() {
+                                    callback.onComplete(e);
+                                }
+                            });
+                        }
                     }
                 }
             });

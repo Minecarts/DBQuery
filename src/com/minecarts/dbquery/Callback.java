@@ -34,12 +34,12 @@ public class Callback implements Runnable {
     }
     
     public void run() {
-        try {
-            onComplete(method.invoke(scope, args));
-        }
-        catch(Exception e) {
-            onComplete(e);
-        }
+        //try {
+        //    onComplete(method.invoke(scope, args));
+        //}
+        //catch(Exception e) {
+        //    onComplete(e);
+        //}
     }
     
     public void onComplete(Object... args) {

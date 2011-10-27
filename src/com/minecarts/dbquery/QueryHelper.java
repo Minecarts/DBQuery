@@ -24,20 +24,6 @@ public class QueryHelper {
             ColumnValues = new QueryFragment("`{0}`=VALUES(`{0}`)"),
             ColumnLastInsertId = new QueryFragment("`{0}`=LAST_INSERT_ID(`{0}`)");
     
-    protected static Method AFFECTED, INSERT_ID, FETCH, GENERATED_KEYS;
-    static {
-        Class self = QueryHelper.class;
-        try {
-            AFFECTED = self.getMethod("getUpdateCount", PreparedStatement.class);
-            INSERT_ID = self.getMethod("getInsertId", PreparedStatement.class);
-            FETCH = self.getMethod("getResultSet", PreparedStatement.class);
-            GENERATED_KEYS = self.getMethod("getGeneratedKeys", PreparedStatement.class);
-        }
-        catch(NoSuchMethodException e) {
-            e.printStackTrace();
-        }
-    }
-    
     
     public QueryHelper(Provider provider) {
         this.provider = provider;
@@ -53,22 +39,14 @@ public class QueryHelper {
     }
     
     
-    public Object execute(Method method, String sql, Object... params) throws SQLException {
+    public PreparedStatement execute(String sql, Object... params) throws SQLException {
         Connection conn = provider.getConnection();
         if(conn == null) return null;
         
         PreparedStatement stmt = prepare(conn, sql, params);
         try {
             stmt.execute();
-            
-            try {
-                return method.invoke(this, stmt);
-            }
-            // TODO: Improve exception handling
-            catch(Exception e) {
-                e.printStackTrace();
-                return null;
-            }
+            return stmt;
         }
         finally {
             stmt.close();
@@ -78,19 +56,55 @@ public class QueryHelper {
     
     
     public Integer affected(String sql, Object... params) throws SQLException {
-        return (Integer) execute(AFFECTED, sql, params);
+        PreparedStatement stmt = execute(sql, params);
+        if(stmt == null) return null;
+        
+        return stmt.getUpdateCount();
     }
     
     public Integer insertId(String sql, Object... params) throws SQLException {
-        return (Integer) execute(INSERT_ID, sql, params);
+        Connection conn = provider.getConnection();
+        if(conn == null) return null;
+        
+        PreparedStatement stmt = prepare(conn, sql, params);
+        try {
+            stmt.execute();
+            return getInsertId(stmt);
+        }
+        finally {
+            stmt.close();
+            conn.close();
+        }
     }
     
     public ArrayList<HashMap> fetch(String sql, Object... params) throws SQLException {
-        return (ArrayList<HashMap>) execute(FETCH, sql, params);
+        Connection conn = provider.getConnection();
+        if(conn == null) return null;
+        
+        PreparedStatement stmt = prepare(conn, sql, params);
+        try {
+            stmt.execute();
+            return getResultSet(stmt);
+        }
+        finally {
+            stmt.close();
+            conn.close();
+        }
     }
     
     public ArrayList<HashMap> generatedKeys(String sql, Object... params) throws SQLException {
-        return (ArrayList<HashMap>) execute(GENERATED_KEYS, sql, params);
+        Connection conn = provider.getConnection();
+        if(conn == null) return null;
+        
+        PreparedStatement stmt = prepare(conn, sql, params);
+        try {
+            stmt.execute();
+            return getGeneratedKeys(stmt);
+        }
+        finally {
+            stmt.close();
+            conn.close();
+        }
     }
     
     
