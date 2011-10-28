@@ -25,8 +25,10 @@ public class Callback implements Runnable, Cloneable {
             return callback;
         }
         catch(CloneNotSupportedException e) {
-            // not sure what this should return...
+            // not sure what to return...
             return this;
+            //return new Callback();
+            //return null;
         }
     }
     
