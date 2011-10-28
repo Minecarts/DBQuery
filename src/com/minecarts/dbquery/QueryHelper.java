@@ -59,52 +59,28 @@ public class QueryHelper {
         PreparedStatement stmt = execute(sql, params);
         if(stmt == null) return null;
         
-        return stmt.getUpdateCount();
+        return getUpdateCount(stmt);
     }
     
     public Integer insertId(String sql, Object... params) throws SQLException {
-        Connection conn = provider.getConnection();
-        if(conn == null) return null;
+        PreparedStatement stmt = execute(sql, params);
+        if(stmt == null) return null;
         
-        PreparedStatement stmt = prepare(conn, sql, params);
-        try {
-            stmt.execute();
-            return getInsertId(stmt);
-        }
-        finally {
-            stmt.close();
-            conn.close();
-        }
+        return getInsertId(stmt);
     }
     
     public ArrayList<HashMap> fetch(String sql, Object... params) throws SQLException {
-        Connection conn = provider.getConnection();
-        if(conn == null) return null;
+        PreparedStatement stmt = execute(sql, params);
+        if(stmt == null) return null;
         
-        PreparedStatement stmt = prepare(conn, sql, params);
-        try {
-            stmt.execute();
-            return getResultSet(stmt);
-        }
-        finally {
-            stmt.close();
-            conn.close();
-        }
+        return getResultSet(stmt);
     }
     
     public ArrayList<HashMap> generatedKeys(String sql, Object... params) throws SQLException {
-        Connection conn = provider.getConnection();
-        if(conn == null) return null;
+        PreparedStatement stmt = execute(sql, params);
+        if(stmt == null) return null;
         
-        PreparedStatement stmt = prepare(conn, sql, params);
-        try {
-            stmt.execute();
-            return getGeneratedKeys(stmt);
-        }
-        finally {
-            stmt.close();
-            conn.close();
-        }
+        return getGeneratedKeys(stmt);
     }
     
     

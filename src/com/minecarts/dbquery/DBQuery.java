@@ -3,6 +3,8 @@ package com.minecarts.dbquery;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.ArrayList;
 
 import java.lang.reflect.Method;
 
@@ -72,8 +74,8 @@ public class DBQuery extends org.bukkit.plugin.java.JavaPlugin {
             super(provider);
         }
         
-        public Integer affected(final String sql, Object... params) {
-            DBQuery.this.logf("affected called");
+        public ArrayList<HashMap> fetch(final String sql, Object... params) {
+            DBQuery.this.logf("fetch called");
                     
             final Callback callback;
             final Object[] newParams;
@@ -93,7 +95,7 @@ public class DBQuery extends org.bukkit.plugin.java.JavaPlugin {
             getServer().getScheduler().scheduleAsyncDelayedTask(DBQuery.this, new Runnable() {
                 public void run() {
                     try {
-                        final Integer result = AsyncQueryHelper.super.affected(sql, newParams);
+                        final ArrayList<HashMap> result = AsyncQueryHelper.super.fetch(sql, newParams);
                         if(callback != null) {
                             getServer().getScheduler().scheduleSyncDelayedTask(DBQuery.this, new Runnable() {
                                 public void run() {
