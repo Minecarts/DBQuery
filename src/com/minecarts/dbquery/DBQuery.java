@@ -75,8 +75,6 @@ public class DBQuery extends org.bukkit.plugin.java.JavaPlugin {
         }
         
         public ArrayList<HashMap> fetch(final String sql, Object... params) {
-            DBQuery.this.logf("fetch called");
-                    
             final Callback callback;
             final Object[] newParams;
             
@@ -89,29 +87,17 @@ public class DBQuery extends org.bukkit.plugin.java.JavaPlugin {
                 newParams = params;
             }
             
-            DBQuery.this.logf("callback: {0}", callback);
-            DBQuery.this.logf("params: {0}", params);
-            
             getServer().getScheduler().scheduleAsyncDelayedTask(DBQuery.this, new Runnable() {
                 public void run() {
+                    Object result;
                     try {
-                        final ArrayList<HashMap> result = AsyncQueryHelper.super.fetch(sql, newParams);
-                        if(callback != null) {
-                            getServer().getScheduler().scheduleSyncDelayedTask(DBQuery.this, new Runnable() {
-                                public void run() {
-                                    callback.onComplete(result);
-                                }
-                            });
-                        }
+                        result = AsyncQueryHelper.super.fetch(sql, newParams);
                     }
                     catch(final Exception e) {
-                        if(callback != null) {
-                            getServer().getScheduler().scheduleSyncDelayedTask(DBQuery.this, new Runnable() {
-                                public void run() {
-                                    callback.onComplete(e);
-                                }
-                            });
-                        }
+                        result = e;
+                    }
+                    if(callback != null) {
+                        getServer().getScheduler().scheduleSyncDelayedTask(DBQuery.this, callback.clone(result));
                     }
                 }
             });
