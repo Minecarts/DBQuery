@@ -31,13 +31,13 @@ public class Callback implements Runnable, Cloneable {
     }
     
     public void run() {
-        if(result.getClass().equals(ArrayList.class)) {
+        if(result instanceof ArrayList) {
             onComplete((ArrayList) result);
         }
-        else if(result.getClass().equals(Integer.class)) {
+        else if(result instanceof Integer) {
             onComplete((Integer) result);
         }
-        else if(result.getClass().equals(Exception.class)) {
+        else if(result instanceof Exception) {
             onError((Exception) result);
         }
     }
