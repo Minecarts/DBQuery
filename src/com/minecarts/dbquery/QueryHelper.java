@@ -39,9 +39,9 @@ public class QueryHelper {
     }
     
     
-    public boolean execute(String sql, Object... params) throws SQLException {
+    public Boolean execute(String sql, Object... params) throws SQLException {
         Connection conn = provider.getConnection();
-        if(conn == null) return false;
+        if(conn == null) return null;
         
         PreparedStatement stmt = prepare(conn, sql, params);
         try {
