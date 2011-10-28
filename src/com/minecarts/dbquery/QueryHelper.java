@@ -39,14 +39,14 @@ public class QueryHelper {
     }
     
     
-    public PreparedStatement execute(String sql, Object... params) throws SQLException {
+    public boolean execute(String sql, Object... params) throws SQLException {
         Connection conn = provider.getConnection();
-        if(conn == null) return null;
+        if(conn == null) return false;
         
         PreparedStatement stmt = prepare(conn, sql, params);
         try {
             stmt.execute();
-            return stmt;
+            return true;
         }
         finally {
             stmt.close();
@@ -56,31 +56,63 @@ public class QueryHelper {
     
     
     public Integer affected(String sql, Object... params) throws SQLException {
-        PreparedStatement stmt = execute(sql, params);
-        if(stmt == null) return null;
+        Connection conn = provider.getConnection();
+        if(conn == null) return null;
         
-        return getUpdateCount(stmt);
+        PreparedStatement stmt = prepare(conn, sql, params);
+        try {
+            stmt.execute();
+            return getUpdateCount(stmt);
+        }
+        finally {
+            stmt.close();
+            conn.close();
+        }
     }
     
     public Integer insertId(String sql, Object... params) throws SQLException {
-        PreparedStatement stmt = execute(sql, params);
-        if(stmt == null) return null;
+        Connection conn = provider.getConnection();
+        if(conn == null) return null;
         
-        return getInsertId(stmt);
+        PreparedStatement stmt = prepare(conn, sql, params);
+        try {
+            stmt.execute();
+            return getInsertId(stmt);
+        }
+        finally {
+            stmt.close();
+            conn.close();
+        }
     }
     
     public ArrayList<HashMap> fetch(String sql, Object... params) throws SQLException {
-        PreparedStatement stmt = execute(sql, params);
-        if(stmt == null) return null;
+        Connection conn = provider.getConnection();
+        if(conn == null) return null;
         
-        return getResultSet(stmt);
+        PreparedStatement stmt = prepare(conn, sql, params);
+        try {
+            stmt.execute();
+            return getResultSet(stmt);
+        }
+        finally {
+            stmt.close();
+            conn.close();
+        }
     }
     
     public ArrayList<HashMap> generatedKeys(String sql, Object... params) throws SQLException {
-        PreparedStatement stmt = execute(sql, params);
-        if(stmt == null) return null;
+        Connection conn = provider.getConnection();
+        if(conn == null) return null;
         
-        return getGeneratedKeys(stmt);
+        PreparedStatement stmt = prepare(conn, sql, params);
+        try {
+            stmt.execute();
+            return getGeneratedKeys(stmt);
+        }
+        finally {
+            stmt.close();
+            conn.close();
+        }
     }
     
     
