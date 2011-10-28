@@ -49,7 +49,7 @@ public class Callback implements Runnable, Cloneable {
         // do nothing!
     }
     public void onError(Exception e) {
-        e.printStackTrace();
+        // do nothing!
     }
     
 }
