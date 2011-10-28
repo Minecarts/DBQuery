@@ -4,10 +4,7 @@ import java.util.Arrays;
 
 import java.text.MessageFormat;
 
-/**
- *
- * @author Kevin
- */
+
 public class QueryFragment {
     
     protected String query;

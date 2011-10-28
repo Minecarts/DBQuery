@@ -62,12 +62,6 @@ public class DBQuery extends org.bukkit.plugin.java.JavaPlugin {
     }
     
     
-    public class AsyncCallback extends Callback {
-        public void schedule() {
-            getServer().getScheduler().scheduleAsyncDelayedTask(DBQuery.this, this);
-        }
-    }
-    
     public class AsyncQueryHelper extends QueryHelper {
         
         public AsyncQueryHelper(Provider provider) {
