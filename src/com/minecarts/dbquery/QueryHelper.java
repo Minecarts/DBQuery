@@ -17,10 +17,6 @@ public class QueryHelper {
     
     public final Provider provider;
     
-    public static final QueryFragment
-            ColumnValues = new QueryFragment("`{0}`=VALUES(`{0}`)"),
-            ColumnLastInsertId = new QueryFragment("`{0}`=LAST_INSERT_ID(`{0}`)");
-    
     public enum QueryType {
         FETCH, FETCH_ONE, AFFECTED, INSERT_ID, GENERATED_KEYS
     }

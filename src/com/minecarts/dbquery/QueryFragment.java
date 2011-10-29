@@ -10,6 +10,11 @@ public class QueryFragment {
     protected String query;
     protected Object[] params;
     
+    public static QueryFragment
+            NOW = new QueryFragment("NOW()"),
+            VALUES = new QueryFragment("`{0}`=VALUES(`{0}`)"),
+            LAST_INSERT_ID = new QueryFragment("`{0}`=LAST_INSERT_ID(`{0}`)");
+    
     public QueryFragment(String query, Object... params) {
         this.query = query;
         this.params = params;
