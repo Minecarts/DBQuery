@@ -62,6 +62,7 @@ public class DBQuery extends org.bukkit.plugin.java.JavaPlugin {
             super(provider);
         }
         
+        @Override
         public Object execute(QueryType type, String sql, Object... params) {
             if(params.length > 0 && params[params.length - 1] instanceof Callback) {
                 execute(type, sql, Arrays.copyOf(params, params.length - 1), (Callback) params[params.length - 1]);

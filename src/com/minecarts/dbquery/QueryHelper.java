@@ -85,6 +85,34 @@ public class QueryHelper {
         return (ArrayList<HashMap>) execute(QueryType.GENERATED_KEYS, sql, params);
     }
     
+    public Integer insert(String table, HashMap<String, Object> row, Object... args) throws SQLException, NoConnectionException {
+        if(row == null || row.isEmpty()) return null;
+        
+        ArrayList<String> values = new ArrayList<String>();
+        ArrayList<Object> params = new ArrayList<Object>();
+        
+        for(String column : row.keySet()) {
+            Object value = row.get(column);
+            
+            if(value instanceof QueryFragment) {
+                values.add(((QueryFragment) value).getQuery());
+                params.add(((QueryFragment) value).getParams());
+            }
+            else {
+                values.add("?");
+                params.add(value);
+            }
+        }
+        
+        StringBuilder sql = new StringBuilder();
+        
+        sql.append("INSERT INTO `").append(table).append("`\n");
+        sql.append("(").append(join((String[]) row.keySet().toArray(), ", ", "`")).append(")\n");
+        sql.append("VALUES\n");
+        sql.append("(").append(join((String[]) values.toArray(), ", ", "`")).append(")\n");
+        
+        return insertId(sql.toString(), QueryFragment.concat(params.toArray(), args));
+    }
     
     
     public static Integer getUpdateCount(PreparedStatement stmt) throws SQLException {
@@ -133,6 +161,25 @@ public class QueryHelper {
     
     public static ArrayList<HashMap> getGeneratedKeys(PreparedStatement stmt) throws SQLException {
         return getRows(stmt.getGeneratedKeys());
+    }
+    
+    
+    public static String join(String[] pieces) {
+        return join(pieces, null);
+    }
+    public static String join(String[] pieces, String glue) {
+        return join(pieces, glue, null);
+    }
+    public static String join(String[] pieces, String glue, String wrap) {
+        if(pieces.length == 0) return "";
+        if(glue == null) glue = "";
+        
+        StringBuilder output = new StringBuilder();
+        for(String piece : pieces) {
+            output.append(wrap).append(piece).append(wrap).append(glue);
+        }
+        
+        return output.substring(0, output.length() - glue.length());
     }
     
 }
