@@ -2,9 +2,6 @@ package com.minecarts.dbquery;
 
 import java.util.HashMap;
 import java.util.ArrayList;
-import java.util.Arrays;
-
-import java.lang.reflect.Method;
 
 import java.sql.SQLException;
 import java.sql.Connection;
@@ -24,6 +21,9 @@ public class QueryHelper {
             ColumnValues = new QueryFragment("`{0}`=VALUES(`{0}`)"),
             ColumnLastInsertId = new QueryFragment("`{0}`=LAST_INSERT_ID(`{0}`)");
     
+    public enum QueryType {
+        FETCH, AFFECTED, INSERT_ID, GENERATED_KEYS
+    }
     
     public QueryHelper(Provider provider) {
         this.provider = provider;
@@ -39,14 +39,26 @@ public class QueryHelper {
     }
     
     
-    public Boolean execute(String sql, Object... params) throws SQLException {
+    public Object execute(QueryType type, String sql, Object... params) throws SQLException, NoConnectionException {
         Connection conn = provider.getConnection();
-        if(conn == null) return null;
+        if(conn == null) throw new NoConnectionException();
         
         PreparedStatement stmt = prepare(conn, sql, params);
         try {
             stmt.execute();
-            return true;
+            
+            switch(type) {
+                case FETCH:
+                    return getResultSet(stmt);
+                case AFFECTED:
+                    return getUpdateCount(stmt);
+                case INSERT_ID:
+                    return getInsertId(stmt);
+                case GENERATED_KEYS:
+                    return getGeneratedKeys(stmt);
+            }
+            
+            return null;
         }
         finally {
             stmt.close();
@@ -55,66 +67,21 @@ public class QueryHelper {
     }
     
     
-    public Integer affected(String sql, Object... params) throws SQLException {
-        Connection conn = provider.getConnection();
-        if(conn == null) return null;
-        
-        PreparedStatement stmt = prepare(conn, sql, params);
-        try {
-            stmt.execute();
-            return getUpdateCount(stmt);
-        }
-        finally {
-            stmt.close();
-            conn.close();
-        }
+    public Integer affected(String sql, Object... params) throws SQLException, NoConnectionException {
+        return (Integer) execute(QueryType.AFFECTED, sql, params);
     }
     
-    public Integer insertId(String sql, Object... params) throws SQLException {
-        Connection conn = provider.getConnection();
-        if(conn == null) return null;
-        
-        PreparedStatement stmt = prepare(conn, sql, params);
-        try {
-            stmt.execute();
-            return getInsertId(stmt);
-        }
-        finally {
-            stmt.close();
-            conn.close();
-        }
+    public Integer insertId(String sql, Object... params) throws SQLException, NoConnectionException {
+        return (Integer) execute(QueryType.INSERT_ID, sql, params);
     }
     
-    public ArrayList<HashMap> fetch(String sql, Object... params) throws SQLException {
-        Connection conn = provider.getConnection();
-        if(conn == null) return null;
-        
-        PreparedStatement stmt = prepare(conn, sql, params);
-        try {
-            stmt.execute();
-            return getResultSet(stmt);
-        }
-        finally {
-            stmt.close();
-            conn.close();
-        }
+    public ArrayList<HashMap> fetch(String sql, Object... params) throws SQLException, NoConnectionException {
+        return (ArrayList<HashMap>) execute(QueryType.FETCH, sql, params);
     }
     
-    public ArrayList<HashMap> generatedKeys(String sql, Object... params) throws SQLException {
-        Connection conn = provider.getConnection();
-        if(conn == null) return null;
-        
-        PreparedStatement stmt = prepare(conn, sql, params);
-        try {
-            stmt.execute();
-            return getGeneratedKeys(stmt);
-        }
-        finally {
-            stmt.close();
-            conn.close();
-        }
+    public ArrayList<HashMap> generatedKeys(String sql, Object... params) throws SQLException, NoConnectionException {
+        return (ArrayList<HashMap>) execute(QueryType.GENERATED_KEYS, sql, params);
     }
-    
     
     
     
