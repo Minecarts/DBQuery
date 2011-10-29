@@ -34,6 +34,9 @@ public class Callback implements Runnable, Cloneable {
         if(result instanceof ArrayList) {
             onComplete((ArrayList) result);
         }
+        else if(result instanceof HashMap) {
+            onComplete((HashMap) result);
+        }
         else if(result instanceof Integer) {
             onComplete((Integer) result);
         }
@@ -43,6 +46,9 @@ public class Callback implements Runnable, Cloneable {
     }
     
     public void onComplete(ArrayList<HashMap> rowsOrGeneratedKeys) {
+        // do nothing!
+    }
+    public void onComplete(HashMap row) {
         // do nothing!
     }
     public void onComplete(Integer affectedOrId) {

@@ -3,8 +3,6 @@ package com.minecarts.dbquery;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.ArrayList;
 
 import java.text.MessageFormat;
 
