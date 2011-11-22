@@ -4,16 +4,16 @@
 
     public class ExamplePlugin extends org.bukkit.plugin.java.JavaPlugin {
         // ...
-        private DBConnector dbc;
+        private DBQuery dbq;
 
         public void onEnable() {
             // ...
-            dbc = (DBConnector) getServer().getPluginManager().getPlugin("DBConnector");
+            dbq = (DBQuery) getServer().getPluginManager().getPlugin("DBQuery");
         }
         
         class Query extends com.minecarts.dbquery.Query {
             public Query(String sql) {
-                super(ExamplePlugin.this, dbc.getProvider("minecarts"), sql);
+                super(ExamplePlugin.this, dbq.getProvider("minecarts"), sql);
             }
         }
     }
