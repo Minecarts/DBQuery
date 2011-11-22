@@ -68,16 +68,13 @@ public class Query {
     }
     
     private Query execute(QueryType type, Object... params) {
-        SchedulableQuery query = new SchedulableQuery(type, params);
-        if(async) {
-            query.schedule();
-        }
-        else {
-            query.execute();
-        }
+        new SchedulableQuery(type, params).run();
         return this;
     }
     
+    public Query execute(Object... params) {
+        return execute(null, params);
+    }
     public Query affected(Object... params) {
         return execute(QueryType.AFFECTED, params);
     }
@@ -156,14 +153,27 @@ public class Query {
     public class SchedulableQuery {
         public final QueryType type;
         public final Object[] params;
+        public final boolean async = Query.this.async;
         
         public SchedulableQuery(QueryType type, Object... params) {
             this.type = type;
             this.params = params;
         }
         
-        public void execute() {
-            execute(null);
+        public void run() {
+            run(async);
+        }
+        public void run(boolean async) {
+            if(async) {
+                plugin.getServer().getScheduler().scheduleAsyncDelayedTask(plugin, new Runnable() {
+                    public void run() {
+                        execute(plugin);
+                    }
+                });
+            }
+            else {
+                execute(null);
+            }
         }
         
         private void execute(Plugin plugin) {
@@ -256,13 +266,6 @@ public class Query {
             }
         }
         
-        public void schedule() {
-            plugin.getServer().getScheduler().scheduleAsyncDelayedTask(plugin, new Runnable() {
-                public void run() {
-                    execute(plugin);
-                }
-            });
-        }
         
     }
     
