@@ -7,19 +7,29 @@ import java.text.MessageFormat;
 
 import org.bukkit.plugin.PluginDescriptionFile;
 
+import com.minecarts.dbconnector.DBConnector;
+import com.minecarts.dbconnector.providers.Provider;
+
 
 public class DBQuery extends org.bukkit.plugin.java.JavaPlugin {
     private static final Logger logger = Logger.getLogger("com.minecarts.dbquery"); 
     
     private PluginDescriptionFile pdf;
+    private DBConnector dbc;
 
     public void onEnable() {
         pdf = getDescription();
+        dbc = (DBConnector) getServer().getPluginManager().getPlugin("DBConnector");
         
         logf("Enabled {0}", pdf.getVersion());
     }
     
     public void onDisable() {
+    }
+    
+    
+    public Provider getProvider(String name) {
+        return dbc.getProvider(name);
     }
     
     
