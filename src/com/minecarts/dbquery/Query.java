@@ -4,6 +4,7 @@ import com.minecarts.dbconnector.providers.Provider;
 
 import java.util.HashMap;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import java.sql.SQLException;
 import java.sql.Connection;
@@ -13,6 +14,8 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 
 import org.bukkit.plugin.Plugin;
+
+import org.json.simple.JSONObject;
 
 
 public class Query {
@@ -158,6 +161,15 @@ public class Query {
         public FinalQuery(QueryType type, Object... params) {
             this.type = type;
             this.params = params;
+        }
+        
+        @Override
+        public String toString() {
+            return new JSONObject() {{
+                put("type", type);
+                put("sql", sql);
+                put("params", Arrays.asList(params));
+            }}.toString();
         }
         
         public void run() {
