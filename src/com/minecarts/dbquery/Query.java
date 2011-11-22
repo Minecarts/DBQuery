@@ -53,7 +53,7 @@ public class Query {
     public void onExecute() {
         // do nothing!
     }
-    public void onException(Exception e, SchedulableQuery query) {
+    public void onException(Exception e, FinalQuery query) {
         // do nothing!
     }
     
@@ -68,7 +68,7 @@ public class Query {
     }
     
     private Query execute(QueryType type, Object... params) {
-        new SchedulableQuery(type, params).run();
+        new FinalQuery(type, params).run();
         return this;
     }
     
@@ -150,12 +150,12 @@ public class Query {
     
     
     
-    public class SchedulableQuery {
+    public class FinalQuery {
         public final QueryType type;
         public final Object[] params;
         public final boolean async = Query.this.async;
         
-        public SchedulableQuery(QueryType type, Object... params) {
+        public FinalQuery(QueryType type, Object... params) {
             this.type = type;
             this.params = params;
         }
@@ -259,7 +259,7 @@ public class Query {
                 else { // async
                     plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
                         public void run() {
-                            onException(e, SchedulableQuery.this);
+                            onException(e, FinalQuery.this);
                         }
                     });
                 }

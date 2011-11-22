@@ -29,7 +29,7 @@
         }
 
         @Override
-        public void onException(Exception x, SchedulableQuery query) {
+        public void onException(Exception x, FinalQuery query) {
             // rethrow
             try {
                 throw x;
@@ -46,4 +46,4 @@
 ### Run query by calling the appropriate method with your query params
 
     query.fetch(30); // fetches sessions from the last 30 seconds asynchronously
-    query.sync().fetch(30); // sets queries to run synchronously, then fetches
+    query.sync().fetch(30).async(); // toggles sync queries, fetches, then reverts to async
