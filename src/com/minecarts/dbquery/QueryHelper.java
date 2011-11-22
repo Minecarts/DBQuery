@@ -111,6 +111,8 @@ public class QueryHelper {
         sql.append("VALUES\n");
         sql.append("(").append(join((String[]) values.toArray(), ", ", "`")).append(")\n");
         
+        System.out.print(sql.toString());
+        
         return insertId(sql.toString(), QueryFragment.concat(params.toArray(), args));
     }
     
