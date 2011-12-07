@@ -26,8 +26,8 @@ public class Query {
     protected boolean async = true;
     
     
-    public enum QueryType {
-        FETCH, FETCH_ONE, AFFECTED, INSERT_ID, GENERATED_KEYS
+    public enum CallbackType {
+        EXECUTE, EXCEPTION, FETCH, FETCH_ONE, AFFECTED, INSERT_ID, GENERATED_KEYS
     }
     
     public Query(Plugin plugin, Provider provider, String sql) {
@@ -37,28 +37,23 @@ public class Query {
     }
     
     
-    
-    public void onFetch(ArrayList<HashMap> rows) {
-        // do nothing!
-    }
-    public void onFetchOne(HashMap row) {
-        // do nothing!
-    }
-    public void onAffected(Integer affected) {
-        // do nothing!
-    }
-    public void onInsertId(Integer id) {
-        // do nothing!
-    }
-    public void onGeneratedKeys(ArrayList<HashMap> keys) {
-        // do nothing!
-    }
-    public void onExecute() {
-        // do nothing!
-    }
-    public void onException(Exception e, FinalQuery query) {
-        // do nothing!
-    }
+    // Callbacks
+    public void onExecute() { }
+    public void onExecute(FinalQuery query) { }
+    public void onException(Exception e) { }
+    public void onException(Exception e, FinalQuery query) { }
+    public void onFetch(ArrayList<HashMap> rows) { }
+    public void onFetch(ArrayList<HashMap> rows, FinalQuery query) { }
+    public void onFetchOne(HashMap row) { }
+    public void onFetchOne(HashMap row, FinalQuery query) { }
+    public void onAffected(Integer affected) { }
+    public void onAffected(Integer affected, FinalQuery query) { }
+    public void onInsertId(Integer id) { }
+    public void onInsertId(Integer id, FinalQuery query) { }
+    public void onGeneratedKeys(ArrayList<HashMap> keys) { }
+    public void onGeneratedKeys(ArrayList<HashMap> keys, FinalQuery query) { }
+    public void onComplete() { }
+    public void onComplete(FinalQuery query) { }
     
     
     public Query async() {
@@ -70,28 +65,28 @@ public class Query {
         return this;
     }
     
-    private Query execute(QueryType type, Object... params) {
+    private Query execute(CallbackType type, Object... params) {
         new FinalQuery(type, params).run();
         return this;
     }
     
     public Query execute(Object... params) {
-        return execute(null, params);
+        return execute(CallbackType.EXECUTE, params);
     }
     public Query affected(Object... params) {
-        return execute(QueryType.AFFECTED, params);
+        return execute(CallbackType.AFFECTED, params);
     }
     public Query insertId(Object... params) {
-        return execute(QueryType.INSERT_ID, params);
+        return execute(CallbackType.INSERT_ID, params);
     }
     public Query fetch(Object... params) {
-        return execute(QueryType.FETCH, params);
+        return execute(CallbackType.FETCH, params);
     }
     public Query fetchOne(Object... params) {
-        return execute(QueryType.FETCH_ONE, params);
+        return execute(CallbackType.FETCH_ONE, params);
     }
     public Query generatedKeys(Object... params) {
-        return execute(QueryType.GENERATED_KEYS, params);
+        return execute(CallbackType.GENERATED_KEYS, params);
     }
     
     
@@ -154,11 +149,14 @@ public class Query {
     
     
     public class FinalQuery {
-        public final QueryType type;
+        public final CallbackType type;
         public final Object[] params;
         public final boolean async = Query.this.async;
         
-        public FinalQuery(QueryType type, Object... params) {
+        private Long start;
+        private Long elapsed;
+        
+        public FinalQuery(CallbackType type, Object... params) {
             this.type = type;
             this.params = params;
         }
@@ -170,6 +168,10 @@ public class Query {
                 put("sql", sql);
                 put("params", Arrays.asList(params));
             }}.toString();
+        }
+        
+        public Long elapsed() {
+            return elapsed;
         }
         
         public void run() {
@@ -189,6 +191,11 @@ public class Query {
         }
         
         private void execute(Plugin plugin) {
+            Object result = null;
+            
+            start = System.currentTimeMillis();
+            elapsed = null;
+            
             try {
                 Connection conn = provider.getConnection();
                 if(conn == null) throw new NoConnectionException();
@@ -197,66 +204,22 @@ public class Query {
                 try {
                     stmt.execute();
                     
-                    if(plugin == null) { // sync
-                        switch(type) {
-                            case FETCH:
-                                onFetch(getResultSet(stmt));
-                            case FETCH_ONE:
-                                onFetchOne(getRow(stmt));
-                            case AFFECTED:
-                                onAffected(getUpdateCount(stmt));
-                            case INSERT_ID:
-                                onInsertId(getInsertId(stmt));
-                            case GENERATED_KEYS:
-                                onGeneratedKeys(getGeneratedKeys(stmt));
-                            default:
-                                onExecute();
-                        }
-                    }
-                    else { // async
-                        switch(type) {
-                            case FETCH:
-                                final ArrayList<HashMap> rows = getResultSet(stmt);
-                                plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
-                                    public void run() {
-                                        onFetch(rows);
-                                    }
-                                });
-                            case FETCH_ONE:
-                                final HashMap row = getRow(stmt);
-                                plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
-                                    public void run() {
-                                        onFetchOne(row);
-                                    }
-                                });
-                            case AFFECTED:
-                                final Integer affected = getUpdateCount(stmt);
-                                plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
-                                    public void run() {
-                                        onAffected(affected);
-                                    }
-                                });
-                            case INSERT_ID:
-                                final Integer id = getInsertId(stmt);
-                                plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
-                                    public void run() {
-                                        onInsertId(id);
-                                    }
-                                });
-                            case GENERATED_KEYS:
-                                final ArrayList<HashMap> keys = getGeneratedKeys(stmt);
-                                plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
-                                    public void run() {
-                                        onGeneratedKeys(keys);
-                                    }
-                                });
-                            default:
-                                plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
-                                    public void run() {
-                                        onExecute();
-                                    }
-                                });
-                        }
+                    switch(type) {
+                        case FETCH:
+                            result = getResultSet(stmt);
+                            break;
+                        case FETCH_ONE:
+                            result = getRow(stmt);
+                            break;
+                        case AFFECTED:
+                            result = getUpdateCount(stmt);
+                            break;
+                        case INSERT_ID:
+                            result = getInsertId(stmt);
+                            break;
+                        case GENERATED_KEYS:
+                            result = getGeneratedKeys(stmt);
+                            break;
                     }
                 }
                 finally {
@@ -264,18 +227,64 @@ public class Query {
                     conn.close();
                 }
             }
-            catch(final Exception e) {
-                if(plugin == null) { // sync
-                    onException(e, this);
-                }
-                else { // async
-                    plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
-                        public void run() {
-                            onException(e, FinalQuery.this);
-                        }
-                    });
-                }
+            catch(Exception e) {
+                result = e;
             }
+            
+            elapsed = System.currentTimeMillis() - start;
+            
+            
+            final Object finalResult = result;
+            final CallbackType finalType = finalResult instanceof Exception ? CallbackType.EXCEPTION : type;
+            
+            if(plugin == null) {
+                // sync query
+                callback(finalType, finalResult);
+            }
+            else {
+                // async query, return to main thread
+                plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
+                    public void run() {
+                        callback(finalType, finalResult);
+                    }
+                });
+            }
+        }
+        
+        
+        private void callback(CallbackType type, Object result) {
+            switch(type) {
+                case EXECUTE:
+                    onExecute();
+                    onExecute(this);
+                    break;
+                case EXCEPTION:
+                    onException((Exception) result);
+                    onException((Exception) result, this);
+                    break;
+                case FETCH:
+                    onFetch((ArrayList<HashMap>) result);
+                    onFetch((ArrayList<HashMap>) result, this);
+                    break;
+                case FETCH_ONE:
+                    onFetchOne((HashMap) result);
+                    onFetchOne((HashMap) result, this);
+                    break;
+                case AFFECTED:
+                    onAffected((Integer) result);
+                    onAffected((Integer) result, this);
+                    break;
+                case INSERT_ID:
+                    onInsertId((Integer) result);
+                    onInsertId((Integer) result, this);
+                    break;
+                case GENERATED_KEYS:
+                    onGeneratedKeys((ArrayList<HashMap>) result);
+                    onGeneratedKeys((ArrayList<HashMap>) result, this);
+                    break;
+            }
+            onComplete();
+            onComplete(this);
         }
         
         
