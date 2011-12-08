@@ -1,6 +1,6 @@
 package com.minecarts.dbquery;
 
-import com.minecarts.dbconnector.providers.Provider;
+import com.minecarts.dbconnector.pool.Pool;
 
 import java.util.HashMap;
 import java.util.ArrayList;
@@ -20,7 +20,7 @@ import org.json.simple.JSONObject;
 
 public class Query {
     public final Plugin plugin;
-    public final Provider provider;
+    public final Pool pool;
     public final String sql;
     
     protected boolean async = true;
@@ -30,9 +30,9 @@ public class Query {
         EXECUTE, EXCEPTION, FETCH, FETCH_ONE, AFFECTED, INSERT_ID, GENERATED_KEYS
     }
     
-    public Query(Plugin plugin, Provider provider, String sql) {
+    public Query(Plugin plugin, Pool pool, String sql) {
         this.plugin = plugin;
-        this.provider = provider;
+        this.pool = pool;
         this.sql = sql;
     }
     
@@ -197,7 +197,7 @@ public class Query {
             elapsed = null;
             
             try {
-                Connection conn = provider.getConnection();
+                Connection conn = pool.getConnection();
                 if(conn == null) throw new NoConnectionException();
 
                 PreparedStatement stmt = prepare(conn, sql, params);
