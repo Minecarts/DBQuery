@@ -7,6 +7,8 @@ import java.text.MessageFormat;
 import com.minecarts.dbconnector.DBConnector;
 import com.minecarts.dbconnector.pool.Pool;
 
+import org.bukkit.plugin.Plugin;
+
 
 public class DBQuery extends org.bukkit.plugin.java.JavaPlugin {
     private static final Logger logger = Logger.getLogger("com.minecarts.dbquery"); 
@@ -38,8 +40,10 @@ public class DBQuery extends org.bukkit.plugin.java.JavaPlugin {
     }
     
     
-    public Pool getPool(String name) {
-        return dbc.getPool(name);
+    public class Query extends com.minecarts.dbquery.Query {
+        public Query(Plugin plugin, String pool, String sql) {
+            super(plugin, dbc.getPool(pool), sql);
+        }
     }
     
 }
