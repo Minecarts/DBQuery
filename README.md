@@ -13,16 +13,14 @@
         
         class Query extends com.minecarts.dbquery.Query {
             public Query(String sql) {
-                super(ExamplePlugin.this, dbq.getProvider("minecarts"), sql);
+                super(ExamplePlugin.this, dbq.getPool("mysql"), sql);
             }
         }
     }
 
 ### Prepare your query
 
-    Query query = new Query("SELECT * FROM sessions WHERE NOW() < TIMESTAMPADD(SECOND, ?, end) LIMIT 100") {
-        // protected boolean async = false; // true by default
-
+    Query query = new Query("SELECT * FROM `users` LIMIT 100") {
         @Override
         public void onFetch(ArrayList<HashMap> rows) {
             System.out.println("Got rows: " + rows);
