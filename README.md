@@ -11,9 +11,9 @@
             dbq = (DBQuery) getServer().getPluginManager().getPlugin("DBQuery");
         }
         
-        class Query extends com.minecarts.dbquery.DBQuery.Query {
+        class Query extends com.minecarts.dbquery.Query {
             public Query(String sql) {
-                super(ExamplePlugin.this, "mysql", sql);
+                super(ExamplePlugin.this, dbq.getPool("mysql"), sql);
             }
         }
     }
