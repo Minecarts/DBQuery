@@ -5,7 +5,7 @@ import java.util.logging.Level;
 import java.text.MessageFormat;
 
 import com.minecarts.dbconnector.DBConnector;
-import com.minecarts.dbconnector.pool.Pool;
+import com.minecarts.dbconnector.provider.Provider;
 
 
 public class DBQuery extends org.bukkit.plugin.java.JavaPlugin {
@@ -38,8 +38,11 @@ public class DBQuery extends org.bukkit.plugin.java.JavaPlugin {
     }
     
     
-    public Pool getPool(String name) {
-        return dbc.getPool(name);
+    public Provider getProvider() {
+        return dbc.getProvider();
+    }
+    public Provider getProvider(String name) {
+        return dbc.getProvider(name);
     }
     
 }
