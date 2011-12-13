@@ -57,12 +57,17 @@ public class Query {
     
     
     public Query async() {
-        async = true;
+        return async(true);
+    }
+    public Query async(boolean on) {
+        async = on;
         return this;
     }
     public Query sync() {
-        async = false;
-        return this;
+        return async(false);
+    }
+    public Query sync(boolean on) {
+        return async(!on);
     }
     
     private Query execute(CallbackType type, Object... params) {
