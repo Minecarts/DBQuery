@@ -38,6 +38,7 @@ public class Query {
     
     
     // Callbacks
+    public void onBeforeCallback() { }
     public void onBeforeCallback(FinalQuery query) { }
     public void onExecute() { }
     public void onExecute(FinalQuery query) { }
@@ -55,6 +56,7 @@ public class Query {
     public void onGeneratedKeys(ArrayList<HashMap> keys, FinalQuery query) { }
     public void onComplete() { }
     public void onComplete(FinalQuery query) { }
+    public void onAfterCallback() { }
     public void onAfterCallback(FinalQuery query) { }
     
     
@@ -259,6 +261,7 @@ public class Query {
         
         
         private void callback(CallbackType type, Object result) {
+            onBeforeCallback();
             onBeforeCallback(this);
             
             if(result instanceof Exception) {
@@ -296,6 +299,7 @@ public class Query {
             onComplete();
             onComplete(this);
             
+            onAfterCallback();
             onAfterCallback(this);
         }
         
