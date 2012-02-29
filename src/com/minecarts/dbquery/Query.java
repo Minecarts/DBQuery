@@ -27,7 +27,7 @@ public class Query {
     
     
     public enum CallbackType {
-        FETCH, FETCH_ONE, AFFECTED, INSERT_ID, GENERATED_KEYS
+        EXECUTE, FETCH, FETCH_ONE, AFFECTED, INSERT_ID, GENERATED_KEYS
     }
     
     public Query(Plugin plugin, Provider provider, String sql) {
@@ -38,6 +38,7 @@ public class Query {
     
     
     // Callbacks
+    public void onBeforeCallback(FinalQuery query) { }
     public void onExecute() { }
     public void onExecute(FinalQuery query) { }
     public void onException(Exception e) { }
@@ -54,6 +55,7 @@ public class Query {
     public void onGeneratedKeys(ArrayList<HashMap> keys, FinalQuery query) { }
     public void onComplete() { }
     public void onComplete(FinalQuery query) { }
+    public void onAfterCallback(FinalQuery query) { }
     
     
     public Query async() {
@@ -76,7 +78,7 @@ public class Query {
     }
     
     public Query execute(Object... params) {
-        return execute(null, params);
+        return execute(CallbackType.EXECUTE, params);
     }
     public Query affected(Object... params) {
         return execute(CallbackType.AFFECTED, params);
@@ -257,8 +259,7 @@ public class Query {
         
         
         private void callback(CallbackType type, Object result) {
-            onExecute();
-            onExecute(this);
+            onBeforeCallback(this);
             
             if(result instanceof Exception) {
                 onException((Exception) result);
@@ -266,6 +267,9 @@ public class Query {
             }
             else {
                 switch(type) {
+                    case EXECUTE:
+                        onExecute();
+                        onExecute(this);
                     case FETCH:
                         onFetch((ArrayList<HashMap>) result);
                         onFetch((ArrayList<HashMap>) result, this);
@@ -291,6 +295,8 @@ public class Query {
             
             onComplete();
             onComplete(this);
+            
+            onAfterCallback(this);
         }
         
         
