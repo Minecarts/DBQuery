@@ -27,7 +27,7 @@ public class Query {
     
     
     public enum CallbackType {
-        EXECUTE, EXCEPTION, FETCH, FETCH_ONE, AFFECTED, INSERT_ID, GENERATED_KEYS
+        FETCH, FETCH_ONE, AFFECTED, INSERT_ID, GENERATED_KEYS
     }
     
     public Query(Plugin plugin, Provider provider, String sql) {
@@ -76,7 +76,7 @@ public class Query {
     }
     
     public Query execute(Object... params) {
-        return execute(CallbackType.EXECUTE, params);
+        return execute(null, params);
     }
     public Query affected(Object... params) {
         return execute(CallbackType.AFFECTED, params);
@@ -239,15 +239,14 @@ public class Query {
             elapsed = System.currentTimeMillis() - start;
             
             
-            final Object finalResult = result;
-            final CallbackType finalType = finalResult instanceof Exception ? CallbackType.EXCEPTION : type;
-            
             if(plugin == null) {
                 // sync query
-                callback(finalType, finalResult);
+                callback(type, result);
             }
             else {
                 // async query, return to main thread
+                final Object finalResult = result;
+                final CallbackType finalType = type;
                 plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
                     public void run() {
                         callback(finalType, finalResult);
@@ -258,36 +257,38 @@ public class Query {
         
         
         private void callback(CallbackType type, Object result) {
-            switch(type) {
-                case EXECUTE:
-                    onExecute();
-                    onExecute(this);
-                    break;
-                case EXCEPTION:
-                    onException((Exception) result);
-                    onException((Exception) result, this);
-                    break;
-                case FETCH:
-                    onFetch((ArrayList<HashMap>) result);
-                    onFetch((ArrayList<HashMap>) result, this);
-                    break;
-                case FETCH_ONE:
-                    onFetchOne((HashMap) result);
-                    onFetchOne((HashMap) result, this);
-                    break;
-                case AFFECTED:
-                    onAffected((Integer) result);
-                    onAffected((Integer) result, this);
-                    break;
-                case INSERT_ID:
-                    onInsertId((Integer) result);
-                    onInsertId((Integer) result, this);
-                    break;
-                case GENERATED_KEYS:
-                    onGeneratedKeys((ArrayList<HashMap>) result);
-                    onGeneratedKeys((ArrayList<HashMap>) result, this);
-                    break;
+            onExecute();
+            onExecute(this);
+            
+            if(result instanceof Exception) {
+                onException((Exception) result);
+                onException((Exception) result, this);
             }
+            else {
+                switch(type) {
+                    case FETCH:
+                        onFetch((ArrayList<HashMap>) result);
+                        onFetch((ArrayList<HashMap>) result, this);
+                        break;
+                    case FETCH_ONE:
+                        onFetchOne((HashMap) result);
+                        onFetchOne((HashMap) result, this);
+                        break;
+                    case AFFECTED:
+                        onAffected((Integer) result);
+                        onAffected((Integer) result, this);
+                        break;
+                    case INSERT_ID:
+                        onInsertId((Integer) result);
+                        onInsertId((Integer) result, this);
+                        break;
+                    case GENERATED_KEYS:
+                        onGeneratedKeys((ArrayList<HashMap>) result);
+                        onGeneratedKeys((ArrayList<HashMap>) result, this);
+                        break;
+                }
+            }
+            
             onComplete();
             onComplete(this);
         }
